@@ -1,0 +1,105 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: next-trigger
+--- 
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: next-trigger
+rules:
+  - apiGroups:
+      - triggers.tekton.dev
+    resources:
+      - eventlisteners
+      - triggerbindings
+      - triggertemplates
+    verbs:
+      - get
+  - apiGroups:
+      - tekton.dev
+    resources:
+      - pipelineruns
+      - pipelineresources
+    verbs:
+      - create
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - list
+--- 
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: next-trigger
+subjects:
+  - kind: ServiceAccount
+    name: next-trigger
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: next-trigger
+--- 
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: next-trigger
+spec:
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName:  next-pipeline-run-
+      spec:
+        pipelineRef:
+          name: next-pipeline
+        serviceAccountName: build-bot
+        params:
+          - name: app-name
+            value: next
+          - name: source-repo
+            value: https://github.com/phthom/next
+          - name: image-repo
+            value: quay.io/phthom0/next
+        workspaces:
+          - name: pipeline-shared-data
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 1Gi
+--- 
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: next-trigger
+--- 
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: next-trigger
+spec:
+  serviceAccountName: next-trigger
+  triggers:
+    - bindings:
+        - ref: next-trigger
+      template:
+        name: next-trigger
+--- 
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: next-trigger
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: el-next-trigger
+    weight: 100
+--- 
+
