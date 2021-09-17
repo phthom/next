@@ -106,10 +106,9 @@ spec:
         echo "git clone ${BRANCH_CMD} ${PROTOCOL}://${GIT_USERNAME}:<redacted>@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
 
         GIT_URL="${PROTOCOL}://${GIT_USERNAME}:${GIT_PASSWORD}@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
-        echo "> ${GIT_URL}"
         git clone ${BRANCH_CMD} ${GIT_URL} gitops_cd
         cd gitops_cd
-
+        echo "> git clone"
         mkdir -p prod/${NAMESPACE}/${APP_NAME}/
         cp ../source/k8s/manifests.yaml prod/${NAMESPACE}/${APP_NAME}/
 
