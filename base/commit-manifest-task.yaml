@@ -106,6 +106,7 @@ spec:
         echo "git clone ${BRANCH_CMD} ${PROTOCOL}://${GIT_USERNAME}:<redacted>@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
 
         GIT_URL="${PROTOCOL}://${GIT_USERNAME}:${GIT_PASSWORD}@${GIT_HOST}/${GIT_ORG}/${GIT_REPO}"
+        echo "> ${GIT_URL}"
         git clone ${BRANCH_CMD} ${GIT_URL} gitops_cd
         cd gitops_cd
 
@@ -116,7 +117,11 @@ spec:
           echo "No changes"
           exit 0
         fi
+        echo "> git add"
 
         git add "prod/${NAMESPACE}/${APP_NAME}/manifests.yaml"
+        git status
+        echo "> git commit"
         git commit -m "update ${APP_NAME} to commit ${SHA}"
+        echo "> git push"
         git push
