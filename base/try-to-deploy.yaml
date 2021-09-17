@@ -47,3 +47,4 @@ spec:
             echo "Waiting for rollout of ${target} in ${APP_NAMESPACE}"
             kubectl rollout status -n ${APP_NAMESPACE} ${target}
           done
+
